@@ -1,0 +1,57 @@
+import urllib.request
+from bs4 import BeautifulSoup
+
+
+def get_html(url):
+    response = urllib.request.urlopen(url)
+    return response.read()
+
+
+def get_faculties():
+    html = get_html('https://rasp.unecon.ru/raspisanie.php')
+    soup = BeautifulSoup(html, 'html.parser')
+    faculties = eval(soup.body.main.script.get_text().split('\n')[1][17:-2])
+    return faculties
+
+
+def get_courses(faculty_num):
+    html = get_html('https://rasp.unecon.ru/raspisanie.php')
+    soup = BeautifulSoup(html, 'html.parser')
+    courses = eval(soup.body.main.script.get_text().split('\n')[2][23:-2])[str(faculty_num)]
+    return courses
+
+
+def get_groups(faculty_num, course):
+    html = get_html('https://rasp.unecon.ru/raspisanie.php')
+    soup = BeautifulSoup(html, 'html.parser')
+    groups = eval(soup.body.main.script.get_text().split('\n')[3][25:-2])[str(faculty_num)][str(course)]
+    return groups
+
+
+def parse(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    table = soup.find('table')
+    rows = table.find_all('tr')
+    days = []
+    for element in rows[1:]:
+        content = element.find_all('td')
+        try:
+            days.append({
+                'date': content[0].span.text,
+                'day': content[0].find('span', {'class': 'day'}).text,
+                'time': content[1].span.text,
+                'room': content[2].span.text,
+                'lesson': content[3].find('span', {'class': 'predmet'}).text,
+                'teacher': content[3].find('span', {'class': 'prepod'}).text
+            })
+        except:
+            try:
+                days.append({
+                    'time': content[1].span.text,
+                    'room': content[2].span.text,
+                    'lesson': content[3].find('span', {'class': 'predmet'}).text,
+                    'teacher': content[3].find('span', {'class': 'prepod'}).text
+                })
+            except:
+                pass
+    return days
