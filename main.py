@@ -2,7 +2,7 @@
 
 import telebot
 import constants
-import my_parser
+import rasp_parser
 
 try:
     bot = telebot.TeleBot(constants.TOKEN)
