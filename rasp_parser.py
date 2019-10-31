@@ -24,12 +24,10 @@ def get_courses(faculty_num):
 def get_groups(faculty_num, course):
     html = get_html('https://rasp.unecon.ru/raspisanie.php')
     soup = BeautifulSoup(html, 'html.parser')
-    groups = eval(soup.body.main.script.get_text().split('\n')[3][25:-2])[str(faculty_num)][str(course)]
     groups = {}
     group_list = eval(soup.body.main.script.get_text().split('\n')[3][25:-2])[str(faculty_num)][str(course)]
     for group_dict in group_list:
         groups.update({group_dict.get('grp_kod'): [group_dict.get('grp_nomer'), group_dict.get('grp_spec_name')]})
-        # groups.update({group_dict[0]: [group_dict[1], group_dict[3]]})
         groups.update({group_dict.get('grp_kod'): [group_dict.get('grp_nomer'), group_dict.get('grp_spec_kod'), group_dict.get('grp_spec_name')]})
     return groups
 
@@ -61,3 +59,5 @@ def parse(html):
             except:
                 pass
     return days
+
+print(get_groups(18, 2))
