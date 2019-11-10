@@ -1,11 +1,11 @@
 # _*_ coding: utf-8 _*_
 
 import telebot
-import constants
+from constants import TOKEN
 import rasp_parser
 
 try:
-    bot = telebot.TeleBot(constants.TOKEN)
+    bot = telebot.TeleBot(TOKEN)
     print(bot.get_me())
 
     start_markup = telebot.types.ReplyKeyboardMarkup(True, False)
