@@ -39,7 +39,7 @@ def parse(html):
     days = []
     for element in rows[1:]:
         content = element.find_all('td')
-                try:
+        try:
             days.append({
                 'time': content[1].span.text,
                 'dates': content[1].find('span', {'class': 'dates'}).text,
@@ -60,5 +60,3 @@ def parse(html):
             except:
                 pass
     return days
-
-print(get_groups(18, 2))
