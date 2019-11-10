@@ -39,11 +39,11 @@ def parse(html):
     days = []
     for element in rows[1:]:
         content = element.find_all('td')
-        try:
+                try:
             days.append({
-                'date': content[0].span.text,
-                'day': content[0].find('span', {'class': 'day'}).text,
                 'time': content[1].span.text,
+                'dates': content[1].find('span', {'class': 'dates'}).text,
+                'even_odd': content[1].find('span', {'class': 'even_odd'}).text,
                 'room': content[2].span.text,
                 'lesson': content[3].find('span', {'class': 'predmet'}).text,
                 'teacher': content[3].find('span', {'class': 'prepod'}).text
@@ -52,6 +52,7 @@ def parse(html):
             try:
                 days.append({
                     'time': content[1].span.text,
+                    'dates': content[1].find('span', {'class': 'dates'}).text,
                     'room': content[2].span.text,
                     'lesson': content[3].find('span', {'class': 'predmet'}).text,
                     'teacher': content[3].find('span', {'class': 'prepod'}).text
