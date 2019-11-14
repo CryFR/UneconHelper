@@ -1,8 +1,8 @@
-import MySQLdb
+import pymysql
 import rasp_parser
 from constants import MYSQL_IP, MYSQL_USER, MYSQL_PASSWORD, MYSQL_BD_NAME
 
-conn = MySQLdb.connect('MYSQL_IP','MYSQL_USER','MYSQL_PASSWORD', 'MYSQL_BD_NAME')
+conn = pymysql.connect(MYSQL_IP, MYSQL_USER, MYSQL_PASSWORD, MYSQL_BD_NAME)
 cursor = conn.cursor()
 keys_fac, values_fac = zip(*rasp_parser.get_faculties().items())
 keys_grp, values_grp  = zip(*rasp_parser.get_groups(18, 2).items())
