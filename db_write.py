@@ -18,12 +18,10 @@ def fill_faculties():
 
 
 def fill_groups():
-    facs_rows = cursor.execute("SELECT * FROM faculties")
+    faculty_rows = cursor.execute("SELECT * FROM faculties")
     sql = "INSERT INTO `groups` (group_id, group_number, group_speciality_name, group_speciality_code, faculty_id, course) VALUES (%s, %s, %s, %s, %s, %s)"
-    for j in range(0, facs_rows):
-        faculty_row = cursor.execute(f"SELECT faculty_id FROM faculties LIMIT {j}, 1")
+    for j in range(0, faculty_rows):
         faculty_id = cursor.fetchall()
-        course_row = cursor.execute(f"SELECT courses FROM faculties LIMIT {j}, 1")
         courses_num = cursor.fetchall()
         courses = courses_num[0][0].split(',')
         print(faculty_id[0][0], courses)
@@ -31,7 +29,6 @@ def fill_groups():
             keys_grp, values_grp = zip(*schedule_parser.get_groups(faculty_id[0][0], course).items())
             for i in range(0, len(keys_grp)):
                 data = (keys_grp[i], values_grp[i][0], values_grp[i][2], values_grp[i][1], faculty_id, course)
-                print(data)
                 try:
                     cursor.execute(sql, data)
                 except Exception as e:
