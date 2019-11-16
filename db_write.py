@@ -11,9 +11,9 @@ def fill_faculties():
         cursor.execute(sql, data)
         i += 1
 
-
+        
 def fill_teachers(group_id):
-    sql = "INSERT INTO teachers (surname_ru, first_name_ru, patronymic_ru) VALUES (%s, %s, %s)"
+    sql = "REPLACE INTO teachers (surname_ru, first_name_ru, patronymic_ru) VALUES (%s, %s, %s)"
     group_teachers = set(lesson['teacher'] for lesson in schedule_parser.parse_semester(group_id))
     for teacher in group_teachers:
         data = teacher.split()
@@ -22,9 +22,9 @@ def fill_teachers(group_id):
         except Exception as e:
             print(e)
 
-            
+
 def fill_subjects(group_id):
-    sql = "INSERT INTO subjects (subject_name_ru) VALUES (%s)"
+    sql = "REPLACE INTO subjects (subject_name_ru) VALUES (%s)"
     group_subjects = set(lesson['subject'] for lesson in schedule_parser.parse_semester(group_id))
     for subject in group_subjects:
         subject = subject.partition('(')[0].rstrip()
