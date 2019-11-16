@@ -47,7 +47,7 @@ def parse_semester(group_id):
                 'dates': content[1].find('span', {'class': 'dates'}).text,
                 'even_odd': content[1].find('span', {'class': 'even_odd'}).text,
                 'room': content[2].span.text,
-                'lesson': content[3].find('span', {'class': 'predmet'}).text,
+                'subject': content[3].find('span', {'class': 'predmet'}).text,
                 'teacher': content[3].find('span', {'class': 'prepod'}).text
             })
         except:
@@ -56,7 +56,7 @@ def parse_semester(group_id):
                     'time': content[1].span.text,
                     'dates': content[1].find('span', {'class': 'dates'}).text,
                     'room': content[2].span.text,
-                    'lesson': content[3].find('span', {'class': 'predmet'}).text,
+                    'subject': content[3].find('span', {'class': 'predmet'}).text,
                     'teacher': content[3].find('span', {'class': 'prepod'}).text
                 })
             except:
