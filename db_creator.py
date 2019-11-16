@@ -33,7 +33,7 @@ sql = ['''DROP TABLE IF EXISTS users;''',
        '''DROP TABLE IF EXISTS faculties;''',
        '''CREATE TABLE faculties (
                faculty_id SMALLINT UNSIGNED, 
-               number_of_courses TINYINT(3), 
+               courses SET('1', '2', '3', '4', '5', '6'), 
                faculty_name_ru TINYTEXT, 
                faculty_name_en TINYTEXT, 
                PRIMARY KEY (faculty_id)
