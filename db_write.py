@@ -21,3 +21,14 @@ def fill_teachers(group_id):
             cursor.execute(sql, data)
         except Exception as e:
             print(e)
+
+            
+def fill_subjects(group_id):
+    sql = "INSERT INTO subjects (subject_name_ru) VALUES (%s)"
+    group_subjects = set(lesson['subject'] for lesson in schedule_parser.parse_semester(group_id))
+    for subject in group_subjects:
+        subject = subject.partition('(')[0].rstrip()
+        try:
+            cursor.execute(sql, subject)
+        except Exception as e:
+            print(e)
