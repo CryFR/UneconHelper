@@ -21,9 +21,10 @@ def fill_groups():
     faculty_rows = cursor.execute("SELECT * FROM faculties")
     sql = "INSERT INTO `groups` (group_id, group_number, group_speciality_name, group_speciality_code, faculty_id, course) VALUES (%s, %s, %s, %s, %s, %s)"
     for j in range(0, faculty_rows):
+        cursor.execute(f"SELECT faculty_id FROM faculties LIMIT {j}, 1")
         faculty_id = cursor.fetchall()
-        courses_num = cursor.fetchall()
-        courses = courses_num[0][0].split(',')
+        cursor.execute(f"SELECT courses FROM faculties LIMIT {j}, 1")
+        courses = cursor.fetchall()[0][0].split(',')
         print(faculty_id[0][0], courses)
         for course in courses:
             keys_grp, values_grp = zip(*schedule_parser.get_groups(faculty_id[0][0], course).items())
