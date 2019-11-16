@@ -1,7 +1,10 @@
 import urllib.request
 from bs4 import BeautifulSoup
+import ssl
 
-rasp_url = 'https://rasp.unecon.ru/raspisanie_grp.php'
+ssl._create_default_https_context = ssl._create_unverified_context
+main_url = 'https://rasp.unecon.ru/raspisanie.php'
+group_url = 'https://rasp.unecon.ru/raspisanie_grp.php'
 
 
 def get_soup(url):
@@ -11,19 +14,19 @@ def get_soup(url):
 
 
 def get_faculties():
-    soup = get_soup(rasp_url)
+    soup = get_soup(main_url)
     faculties = eval(soup.body.main.script.get_text().split('\n')[1][17:-2])
     return faculties
 
 
 def get_courses(faculty_num):
-    soup = get_soup(rasp_url)
+    soup = get_soup(main_url)
     courses = eval(soup.body.main.script.get_text().split('\n')[2][23:-2])[str(faculty_num)]
     return courses
 
 
 def get_groups(faculty_num, course):
-    soup = get_soup(rasp_url)
+    soup = get_soup(main_url)
     groups = {}
     group_list = eval(soup.body.main.script.get_text().split('\n')[3][25:-2])[str(faculty_num)][str(course)]
     for group_dict in group_list:
@@ -32,7 +35,7 @@ def get_groups(faculty_num, course):
 
 
 def parse_semester(group_id):
-    soup = get_soup(rasp_url+f'?g={group_id}')
+    soup = get_soup(group_url+f'?g={group_id}&semestr')
     table = soup.find('table')
     rows = table.find_all('tr')
     days = []
