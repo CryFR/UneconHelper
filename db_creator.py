@@ -47,7 +47,7 @@ sql = ['''DROP TABLE IF EXISTS users;''',
                surname_en TINYTEXT, 
                first_name_en TINYTEXT, 
                patronymic_en TINYTEXT, 
-               UNIQUE INDEX (surname_ru, first_name_ru, patronymic_ru)
+               UNIQUE INDEX full_name (surname_ru(15), first_name_ru(15), patronymic_ru(15))
                ) COLLATE='utf8_general_ci';''',
        '''DROP TABLE IF EXISTS lessons;''',
        '''CREATE TABLE lessons(
@@ -66,7 +66,7 @@ sql = ['''DROP TABLE IF EXISTS users;''',
                number TINYTEXT, 
                building_ru TINYTEXT, 
                building_en TINYTEXT,
-               UNIQUE INDEX (number, building_ru)
+               UNIQUE INDEX full_number (number(10), building_ru(30))
                ) COLLATE='utf8_general_ci';''',
        '''DROP TABLE IF EXISTS subjects;''',
        '''CREATE TABLE subjects(
@@ -75,7 +75,7 @@ sql = ['''DROP TABLE IF EXISTS users;''',
                subject_name_en TINYTEXT, 
                shortcut_ru TINYTEXT, 
                shortcut_en TINYTEXT,
-               UNIQUE INDEX (subject_name_ru)
+               UNIQUE INDEX (subject_name_ru(80))
                ) COLLATE='utf8_general_ci';'''
        ]
 for query in sql:
