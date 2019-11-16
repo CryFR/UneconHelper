@@ -1,39 +1,38 @@
 import urllib.request
 from bs4 import BeautifulSoup
 
+rasp_url = 'https://rasp.unecon.ru/raspisanie_grp.php'
 
-def get_html(url):
+
+def get_soup(url):
     response = urllib.request.urlopen(url)
-    return response.read()
+    soup = BeautifulSoup(response, 'html.parser')
+    return soup
 
 
 def get_faculties():
-    html = get_html('https://rasp.unecon.ru/raspisanie.php')
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = get_soup(rasp_url)
     faculties = eval(soup.body.main.script.get_text().split('\n')[1][17:-2])
     return faculties
 
 
 def get_courses(faculty_num):
-    html = get_html('https://rasp.unecon.ru/raspisanie.php')
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = get_soup(rasp_url)
     courses = eval(soup.body.main.script.get_text().split('\n')[2][23:-2])[str(faculty_num)]
     return courses
 
 
 def get_groups(faculty_num, course):
-    html = get_html('https://rasp.unecon.ru/raspisanie.php')
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = get_soup(rasp_url)
     groups = {}
     group_list = eval(soup.body.main.script.get_text().split('\n')[3][25:-2])[str(faculty_num)][str(course)]
     for group_dict in group_list:
-        groups.update({group_dict.get('grp_kod'): [group_dict.get('grp_nomer'), group_dict.get('grp_spec_name')]})
         groups.update({group_dict.get('grp_kod'): [group_dict.get('grp_nomer'), group_dict.get('grp_spec_kod'), group_dict.get('grp_spec_name')]})
     return groups
 
 
-def parse(html):
-    soup = BeautifulSoup(html, 'html.parser')
+def parse_semester(group_id):
+    soup = get_soup(rasp_url+f'?g={group_id}')
     table = soup.find('table')
     rows = table.find_all('tr')
     days = []
