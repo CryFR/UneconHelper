@@ -10,3 +10,14 @@ def fill_faculties():
         data = (keys_fac[i], values_fac[i], len(schedule_parser.get_courses(keys_fac[i])))
         cursor.execute(sql, data)
         i += 1
+
+
+def fill_teachers(group_id):
+    sql = "INSERT INTO teachers (surname_ru, first_name_ru, patronymic_ru) VALUES (%s, %s, %s)"
+    group_teachers = set(lesson['teacher'] for lesson in schedule_parser.parse_semester(group_id))
+    for teacher in group_teachers:
+        data = teacher.split()
+        try:
+            cursor.execute(sql, data)
+        except Exception as e:
+            print(e)
