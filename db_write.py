@@ -9,7 +9,6 @@ def fill_faculties():
     for i in range(0, len(keys_fac)):
         data = (keys_fac[i], values_fac[i], ','.join((schedule_parser.get_courses(keys_fac[i]).keys())))
         try:
-            # print(data)
             cursor.execute(sql, data)
         except Exception as e:
             print(e)
@@ -45,11 +44,13 @@ def fill_groups():
 #             cursor.execute(sql, data)
 #         except Exception as e:
 #             print(e)
+#         i += 1
 
 
 def fill_teachers(group_id):
     sql = "INSERT INTO teachers (surname_ru, first_name_ru, patronymic_ru) VALUES (%s, %s, %s)"
-    group_teachers = set(lesson['teacher'] for lesson in schedule_parser.parse_semester(group_id))
+    group_teachers = set(lesson['teacher']
+                         for lesson in schedule_parser.parse_semester(group_id))
     for teacher in group_teachers:
         data = teacher.split()
         try:
@@ -60,9 +61,9 @@ def fill_teachers(group_id):
 
 def fill_subjects(group_id):
     sql = "INSERT INTO subjects (subject_name_ru) VALUES (%s)"
-    group_subjects = set(lesson['subject'] for lesson in schedule_parser.parse_semester(group_id))
+    group_subjects = set(lesson['subject'].partition('(')[0].rstrip()
+                         for lesson in schedule_parser.parse_semester(group_id))
     for subject in group_subjects:
-        subject = subject.partition('(')[0].rstrip()
         try:
             cursor.execute(sql, subject)
         except Exception as e:
@@ -71,9 +72,30 @@ def fill_subjects(group_id):
 
 def fill_rooms(group_id):
     sql = "INSERT INTO rooms (number, building_ru) VALUES (%s, %s)"
-    group_rooms = set([lesson['room'], lesson['building']] for lesson in schedule_parser.parse_semester(group_id))
-    for room in group_rooms:
+    group_rooms = {lesson['room']: lesson['building']
+                   for lesson in schedule_parser.parse_semester(group_id)}
+    for room in set(group_rooms):
+        data = [room, group_rooms[room]]
         try:
-            cursor.execute(sql, room)
+            cursor.execute(sql, data)
+        except Exception as e:
+            print(e)
+
+
+def fill_timings():
+    timings = {
+        '1': ['09:00 - 10:35'],
+        '2': ['10:50 - 12:25'],
+        '3': ['12:40 - 14:15'],
+        '4': ['14:30 - 16:00'],
+        '5': ['16:10 - 17:40'],
+        '6': ['18:30 - 20:00'],
+        '7': ['20:10 - 21:40']
+    }
+    sql = "INSERT INTO timings (number, time) VALUES (%s, %s)"
+    for timing in timings:
+        data = [timing, timings[timing]]
+        try:
+            cursor.execute(sql, data)
         except Exception as e:
             print(e)
