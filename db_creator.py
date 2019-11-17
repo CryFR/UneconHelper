@@ -8,7 +8,7 @@ conn = pymysql.connect(host=MYSQL_IP,
 cursor = conn.cursor()
 sql = ['''DROP TABLE IF EXISTS users;''',
        '''CREATE TABLE users(
-               user_id INT UNSIGNED NOT NULL, 
+               user_id INT UNSIGNED NOT NULL PRIMARY KEY, 
                group_ids JSON, 
                teacher_ids JSON, 
                room_id JSON, 
@@ -17,26 +17,23 @@ sql = ['''DROP TABLE IF EXISTS users;''',
                black_list_ids JSON, 
                subscription BOOL, 
                showing_settings SET(''), 
-               state TINYINT UNSIGNED, 
-               PRIMARY KEY (user_id)
+               state TINYINT UNSIGNED
                )COLLATE='utf8_general_ci';''',
        '''DROP TABLE IF EXISTS `groups`;''',
        '''CREATE TABLE `groups`(
-               group_id INT UNSIGNED, 
+               group_id INT UNSIGNED PRIMARY KEY, 
                faculty_id SMALLINT UNSIGNED, 
                course TINYINT(3), 
                group_number CHAR(15), 
                group_speciality_name TINYTEXT, 
-               group_speciality_code INT UNSIGNED, 
-               PRIMARY KEY (group_id)
+               group_speciality_code INT UNSIGNED
                ) COLLATE='utf8_general_ci';''',
        '''DROP TABLE IF EXISTS faculties;''',
        '''CREATE TABLE faculties (
-               faculty_id SMALLINT UNSIGNED, 
+               faculty_id SMALLINT UNSIGNED PRIMARY KEY, 
                courses SET('1', '2', '3', '4', '5', '6'), 
                faculty_name_ru TINYTEXT, 
-               faculty_name_en TINYTEXT, 
-               PRIMARY KEY (faculty_id)
+               faculty_name_en TINYTEXT
                )COLLATE='utf8_general_ci';''',
        '''DROP TABLE IF EXISTS teachers;''',
        '''CREATE TABLE teachers(
@@ -76,7 +73,12 @@ sql = ['''DROP TABLE IF EXISTS users;''',
                shortcut_ru TINYTEXT, 
                shortcut_en TINYTEXT,
                UNIQUE INDEX (subject_name_ru(80))
-               ) COLLATE='utf8_general_ci';'''
+               ) COLLATE='utf8_general_ci';''',
+       '''DROP TABLE IF EXISTS timings;''',
+       '''CREATE TABLE timings(
+               number TINYINT(3) NOT NULL PRIMARY KEY,
+               time TINYTEXT
+       ) COLLATE='utf8_general_ci';'''
        ]
 for query in sql:
     cursor.execute(query)
