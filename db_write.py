@@ -24,7 +24,6 @@ def fill_groups():
         faculty_id = cursor.fetchall()
         cursor.execute(f"SELECT courses FROM faculties LIMIT {j}, 1")
         courses = cursor.fetchall()[0][0].split(',')
-        print(faculty_id[0][0], courses)
         for course in courses:
             keys_grp, values_grp = zip(*schedule_parser.get_groups(faculty_id[0][0], course).items())
             for i in range(0, len(keys_grp)):
