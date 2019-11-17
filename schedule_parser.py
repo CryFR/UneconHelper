@@ -47,7 +47,9 @@ def parse_semester(group_id):
                 'dates': content[1].find('span', {'class': 'dates'}).text,
                 'even_odd': content[1].find('span', {'class': 'even_odd'}).text,
                 'room': content[2].span.text,
-                'subject': content[3].find('span', {'class': 'predmet'}).text,
+                'building': content[2].find('span', {'class': 'korpus'}).text,
+                'subject': content[3].find('span', {'class': 'predmet'}).text.rpartition('(')[0].rstrip(),
+                'type': content[3].find('span', {'class': 'predmet'}).text.rpartition('(')[2].rstrip(')'),
                 'teacher': content[3].find('span', {'class': 'prepod'}).text
             })
         except:
@@ -56,7 +58,9 @@ def parse_semester(group_id):
                     'time': content[1].span.text,
                     'dates': content[1].find('span', {'class': 'dates'}).text,
                     'room': content[2].span.text,
+                    'building': content[2].find('span', {'class': 'korpus'}).text,
                     'subject': content[3].find('span', {'class': 'predmet'}).text,
+                    'type': content[3].find('span', {'class': 'predmet'}).text.rpartition('(')[2].rstrip(')'),
                     'teacher': content[3].find('span', {'class': 'prepod'}).text
                 })
             except:
