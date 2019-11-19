@@ -76,6 +76,13 @@ sql = ['''DROP TABLE IF EXISTS `users`;''',
                `shortcut_ru` TINYTEXT,
                `shortcut_en` TINYTEXT,
                UNIQUE INDEX (subject_name_ru(80))
+               ) COLLATE='utf8_general_ci';''',
+       '''DROP TABLE IF EXISTS `trackings`;''',
+       '''CREATE TABLE `trackings`(
+               `user_id` INT UNSIGNED NOT NULL  PRIMARY KEY,
+               `type` SET('room', 'teacher', 'group'),
+               `tracked_id` SMALLINT UNSIGNED,
+               `is_main` BOOL
                ) COLLATE='utf8_general_ci';'''
        ]
 for query in sql:
