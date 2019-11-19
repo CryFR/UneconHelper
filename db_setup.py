@@ -79,10 +79,10 @@ sql = ['''DROP TABLE IF EXISTS `users`;''',
                ) COLLATE='utf8_general_ci';''',
        '''DROP TABLE IF EXISTS `trackings`;''',
        '''CREATE TABLE `trackings`(
-               `user_id` INT UNSIGNED NOT NULL  PRIMARY KEY,
-               `type` SET('room', 'teacher', 'group'),
-               `tracked_id` SMALLINT UNSIGNED,
-               `is_main` BOOL
+               `user_id` INT UNSIGNED NOT NULL,
+               `type` SET('room', 'teacher', 'group') NOT NULL,
+               `tracked_id` SMALLINT UNSIGNED NOT NULL,
+               `is_main` BOOL NOT NULL
                ) COLLATE='utf8_general_ci';'''
        ]
 for query in sql:
