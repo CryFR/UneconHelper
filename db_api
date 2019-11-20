@@ -1,0 +1,38 @@
+import pymysql
+from constants import MYSQL_IP, MYSQL_USER, MYSQL_PASSWORD, MYSQL_BD_NAME
+
+
+def connect_and_run(func):
+    def wrap(*args):
+        conn = pymysql.connect(host=MYSQL_IP,
+                               database=MYSQL_BD_NAME,
+                               user=MYSQL_USER,
+                               password=MYSQL_PASSWORD)
+        cursor = conn.cursor()
+        result = func(*args, cursor)
+        conn.commit()
+        cursor.close()
+        return result
+    return wrap
+
+
+@connect_and_run
+def change_state(user_id, new_state, cursor):
+    sql = '''INSERT INTO `users` (`user_id`, `state`) VALUES (%s, %s)
+    ON DUPLICATE KEY UPDATE `state`=%s'''
+    data = [user_id, new_state, new_state]
+    cursor.execute(sql, data)
+
+
+@connect_and_run
+def get_state(user_id, cursor):
+    sql = '''SELECT `state` FROM `users` WHERE `user_id`=%s'''
+    cursor.execute(sql, user_id)
+    return cursor.fetchall()[0][0]
+
+
+@connect_and_run
+def get_faculties(cursor):
+    sql = '''SELECT `faculty_name_ru` FROM `faculties`'''
+    cursor.execute(sql)
+    return cursor.fetchall()
