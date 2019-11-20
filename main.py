@@ -12,8 +12,8 @@ try:
     start_markup.row()
 
     faculty_markup = telebot.types.ReplyKeyboardMarkup(True, False)
-    for faculty in rasp_parser.get_faculties():
-        faculty_markup.row(rasp_parser.get_faculties()[faculty])
+    for faculty in schedule_parser.get_faculties():
+        faculty_markup.row(schedule_parser.get_faculties()[faculty])
 
     language_markup = telebot.types.ReplyKeyboardMarkup(True, False)
     language_markup.row('English', 'Русский')
