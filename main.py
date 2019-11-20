@@ -2,7 +2,7 @@
 
 import telebot
 from constants import TOKEN
-import rasp_parser
+import schedule_parser
 
 try:
     bot = telebot.TeleBot(TOKEN)
