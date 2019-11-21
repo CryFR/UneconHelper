@@ -1,11 +1,7 @@
 import pymysql
 from constants import MYSQL_IP, MYSQL_USER, MYSQL_PASSWORD, MYSQL_BD_NAME
 
-conn = pymysql.connect(host=MYSQL_IP,
-                       database=MYSQL_BD_NAME,
-                       user=MYSQL_USER,
-                       password=MYSQL_PASSWORD)
-cursor = conn.cursor()
+
 sql = ['''DROP TABLE IF EXISTS `users`;''',
        '''CREATE TABLE `users`(
                `user_id` INT UNSIGNED NOT NULL PRIMARY KEY,
@@ -14,6 +10,7 @@ sql = ['''DROP TABLE IF EXISTS `users`;''',
                `black_list_ids` JSON,
                `subscription` BOOL,
                `showing_settings` SET(''),
+               `buffer` TINYTEXT,
                `state` TINYINT UNSIGNED
                )COLLATE='utf8_general_ci';''',
        '''DROP TABLE IF EXISTS `groups`;''',
@@ -82,10 +79,20 @@ sql = ['''DROP TABLE IF EXISTS `users`;''',
                `user_id` INT UNSIGNED NOT NULL,
                `type` SET('room', 'teacher', 'group') NOT NULL,
                `tracked_id` SMALLINT UNSIGNED NOT NULL,
-               `is_main` BOOL NOT NULL
+               `is_main` BOOL NOT NULL 
                ) COLLATE='utf8_general_ci';'''
        ]
-for query in sql:
-    cursor.execute(query)
-conn.commit()
-cursor.close()
+
+
+def reset():
+    conn = pymysql.connect(host=MYSQL_IP,
+                       database=MYSQL_BD_NAME,
+                       user=MYSQL_USER,
+                       password=MYSQL_PASSWORD)
+    cursor = conn.cursor()
+    if input('Next action will erase all data in tables y/n?') == 'y':
+        for query in sql:
+            print(query)
+            cursor.execute(query)
+    conn.commit()
+    cursor.close()
