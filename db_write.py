@@ -1,10 +1,11 @@
+import datetime
+import re
+from json import dumps
+from db_setup import reset
 import pymysql
+
 import schedule_parser
 from constants import MYSQL_IP, MYSQL_USER, MYSQL_PASSWORD, MYSQL_BD_NAME
-import datetime
-from json import dumps
-import re
-
 
 errors_found = 0
 
@@ -65,7 +66,8 @@ def get_full_date(date_without_year, period):
     period_end = datetime.datetime.strptime(period[1], '%d.%m.%Y').date()
     if period_end.year == period_start.year:
         full_date = datetime.date(period_start.year, date_without_year[1], date_without_year[0])
-    elif datetime.date(period_end.year, 1, 1) <= datetime.date(period_end.year, date_without_year[1], date_without_year[0]) <= period_end:
+    elif datetime.date(period_end.year, 1, 1) <= datetime.date(period_end.year, date_without_year[1],
+                                                               date_without_year[0]) <= period_end:
         full_date = datetime.date(period_end.year, date_without_year[1], date_without_year[0])
     else:
         full_date = datetime.date(period_start.year, date_without_year[1], date_without_year[0])
@@ -183,13 +185,16 @@ def group_fill_all(group_id):
     cursor.execute("SELECT `number`, `time` FROM `timings`")
     timings = {time: number for number, time in cursor.fetchall()}
     lesson_data = []
+    print(teachers)
     for lesson in schedule_parser.parse_semester(group_id):
         global errors_found
         try:
-            if lesson['teacher'] != '' and lesson['teacher'] not in teachers.keys():
+            if lesson['teacher'] != '' and lesson['teacher_id'] not in teachers.values():
                 surname = first_name = patronymic = ''
                 surname, first_name, *patronymic = lesson['teacher'].split()
-                cursor.execute("INSERT INTO `teachers` (`teacher_id`, `surname_ru`, `first_name_ru`, `patronymic_ru`) VALUES (%s, %s, %s, %s)", [lesson['teacher_id'], surname, first_name, ' '.join(patronymic)])
+                cursor.execute(
+                    "INSERT INTO `teachers` (`teacher_id`, `surname_ru`, `first_name_ru`, `patronymic_ru`) VALUES (%s, %s, %s, %s)",
+                    [lesson['teacher_id'], surname, first_name, ' '.join(patronymic)])
                 cursor.execute("SELECT `teacher_id`, `surname_ru`, `first_name_ru`, `patronymic_ru` FROM teachers")
                 teachers = {' '.join(full_name).strip(): teacher_id for teacher_id, *full_name in cursor.fetchall()}
             if lesson['subject'] not in subjects.keys():
@@ -197,7 +202,8 @@ def group_fill_all(group_id):
                 cursor.execute("SELECT `subject_id`, `subject_name_ru` FROM `subjects`")
                 subjects = {subject_name: subject_id for subject_id, subject_name in cursor.fetchall()}
             if ' '.join([lesson['room'], lesson['building']]).strip() not in rooms.keys():
-                cursor.execute("INSERT INTO `rooms` (`number`, `building_ru`) VALUES (%s, %s)", [lesson['room'], lesson['building']])
+                cursor.execute("INSERT INTO `rooms` (`number`, `building_ru`) VALUES (%s, %s)",
+                               [lesson['room'], lesson['building']])
                 cursor.execute("SELECT `room_id`, `number`, `building_ru` FROM `rooms`")
                 rooms = {' '.join(full_address).strip(): room_id for room_id, *full_address in cursor.fetchall()}
             new_lesson_data = [subjects.get(lesson['subject'], ''),
@@ -210,14 +216,15 @@ def group_fill_all(group_id):
                                ]
             try:
                 index = [row[:4] + row[5:] for row in lesson_data].index(new_lesson_data)
-                lesson_data[index][4].extend(dates_to_list(lesson['dates'], lesson['semester_period'], lesson['even_odd']))
+                lesson_data[index][4].extend(
+                    dates_to_list(lesson['dates'], lesson['semester_period'], lesson['even_odd']))
             except ValueError:
                 new_lesson_data.insert(4, dates_to_list(lesson['dates'], lesson['semester_period'], lesson['even_odd']))
                 lesson_data.append(new_lesson_data)
         except Exception as e:
             print('error in collecting lesson, group id:', group_id, '\n', lesson, '\n', e)
             errors_found += 1
-    sql = "INSERT INTO lessons (subject_id, is_choosable, teacher_id, room_id, dates, lesson_number, type_ru, group_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+    sql = "INSERT INTO `lessons` VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
     for row in lesson_data:
         row[4] = dumps(row[4])
         try:
@@ -228,17 +235,22 @@ def group_fill_all(group_id):
 
 
 def fill_all():
-    cursor.execute("SELECT `group_id` FROM `groups`")
+    reset()
     start_time = datetime.datetime.now()
-    average_time = 0
+    fill_timings()
+    fill_faculties()
+    fill_groups()
+    cursor.execute("SELECT `group_id` FROM `groups`")
     groups_done = 0
     for group_id in cursor.fetchall():
         group_time_start = datetime.datetime.now()
         group_fill_all(group_id[0])
         groups_done += 1
-        average_time = (datetime.datetime.now()-start_time) / groups_done
-        print('last operation:', datetime.datetime.now()-group_time_start, '  average time:', average_time, '  time passed:', datetime.datetime.now()-start_time, '  estimated time:', average_time*(664-groups_done), '  errors found:', errors_found)
-    print('Tables filled for:', datetime.datetime.now()-start_time, 'errors found:', errors_found)
+        average_time = (datetime.datetime.now() - start_time) / groups_done
+        print('last operation:', datetime.datetime.now() - group_time_start, '  average time:', average_time,
+              '  time passed:', datetime.datetime.now() - start_time, '  estimated time:',
+              average_time * (664 - groups_done), '  errors found:', errors_found)
+    print('Tables filled for:', datetime.datetime.now() - start_time, 'errors found:', errors_found)
 
 
 if __name__ == '__main__':
