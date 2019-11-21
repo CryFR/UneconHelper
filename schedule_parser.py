@@ -45,14 +45,14 @@ def parse_semester(group_id):
         if row['class'] != ['new_day_border']:
             if row.find('span', class_='prepod').text != '':
                 teacher = row.find('span', class_='prepod').text
-                teacher_id = re.findall('\d+', row.find('a', {'title': 'Преподаватель'})['href'])
+                teacher_id = int(re.findall('\d+', row.find('a', {'title': 'Преподаватель'})['href'])[0])
             else:
                 teacher = teacher_id = ''
             if row.find('td', class_='aud').find('span', class_='aud').text + row.find('span', class_='korpus').text != '':
-                room = row.find('td', class_='aud').find('span', class_='aud').text
+                room = row.find('td', class_='aud').find('span', class_='aud').text.replace('ауд.', '').strip()
                 building = row.find('span', class_='korpus').text
             elif row.find('span', class_='prim').text != '':
-                room = row.find('span', class_='prim').text.rpartition(',')[2].strip()
+                room = row.find('span', class_='prim').text.rpartition(',')[2].replace('ауд.', '').strip()
                 building = row.find('span', class_='prim').text.rpartition(',')[0].strip()
             else:
                 room = building = ''
@@ -80,3 +80,6 @@ def parse_semester(group_id):
                             })
     return lessons
 
+
+if __name__ == '__main__':
+    print(*parse_semester(12077), sep='\n')
