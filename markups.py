@@ -23,25 +23,28 @@ def start():
     return mkp
 
 
-def faculties():
+@connect_and_run
+def faculties(cursor):
     mkp = ReplyKeyboardMarkup(True, False)
-    for faculty in get_faculties():
+    for faculty in get_faculties(cursor):
         mkp.row(faculty)
     return mkp
 
 
-def specialities(faculty):
+@connect_and_run
+def specialities(faculty, cursor):
     mkp = ReplyKeyboardMarkup(True, False)
-    for speciality in get_specialities(faculty):
+    for speciality in get_specialities(faculty, cursor):
         mkp.row(speciality)
     return mkp
 
 
-def groups(faculty, speciality):
+@connect_and_run
+def groups(faculty, speciality, cursor):
     mkp = ReplyKeyboardMarkup(True, False, row_width=4)
     buttons = []
     last_course = 0
-    for group in get_groups(faculty, speciality):
+    for group in get_groups(faculty, speciality, cursor):
         if group['course'] > last_course:
             mkp.add(*buttons)
             mkp.row(f"{group['course']} курс")
@@ -52,24 +55,27 @@ def groups(faculty, speciality):
     return mkp
 
 
-def teachers(name):
+@connect_and_run
+def teachers(name, cursor):
     mkp = ReplyKeyboardMarkup(True, False)
-    for teacher in get_teachers(name):
+    for teacher in get_teachers(name, cursor):
         mkp.row(teacher)
     return mkp
 
 
-def buildings():
+@connect_and_run
+def buildings(cursor):
     mkp = ReplyKeyboardMarkup(True, False)
-    for _building in get_buildings():
+    for _building in get_buildings(cursor):
         mkp.row(_building)
     return mkp
 
 
-def room_numbers(number, building):
+@connect_and_run
+def room_numbers(number, building, cursor):
     mkp = ReplyKeyboardMarkup(True, False, row_width=5)
     buttons = []
-    for room in get_rooms(number, building):
+    for room in get_rooms(number, building, cursor):
         buttons.append(room)
     mkp.add(*buttons)
     return mkp
@@ -124,4 +130,11 @@ def inline_timer(hours, minutes, data):
 
 
 if __name__ == '__main__':
-    print(groups(get_buffer(294821600), 'Информационная безопасность'))
+    conn = pymysql.connect(host=MYSQL_IP,
+                           database=MYSQL_BD_NAME,
+                           user=MYSQL_USER,
+                           password=MYSQL_PASSWORD)
+    cursor = conn.cursor()
+    print(groups(get_buffer(294821600, cursor), 'Информационная безопасность'))
+    conn.commit()
+    cursor.close()
