@@ -1,16 +1,18 @@
 import pymysql
 from constants import MYSQL_IP, MYSQL_USER, MYSQL_PASSWORD, MYSQL_BD_NAME
 
-
 sql = ['''DROP TABLE IF EXISTS `users`;''',
        '''CREATE TABLE `users`(
                `user_id` INT UNSIGNED NOT NULL PRIMARY KEY,
                `is_en` BOOL,
-               `notification_time` VARCHAR(30),
-               `black_list_ids` JSON,
+               `first_lesson_notification` INT,
+               `every_lesson_notification` INT,
+               `day_notification` TIME,
+               `last_notification` TIMESTAMP NULL ,
                `subscription` BOOL,
                `showing_settings` SET(''),
                `buffer` TINYTEXT,
+               `previous_state` TINYINT UNSIGNED,
                `state` TINYINT UNSIGNED
                )COLLATE='utf8_general_ci';''',
        '''DROP TABLE IF EXISTS `groups`;''',
@@ -43,7 +45,7 @@ sql = ['''DROP TABLE IF EXISTS `users`;''',
                `surname_en` TINYTEXT,
                `first_name_en` TINYTEXT,
                `patronymic_en` TINYTEXT,
-               UNIQUE INDEX full_name (surname_ru(15), first_name_ru(15), patronymic_ru(15))
+               FULLTEXT KEY `full_name`(`first_name_ru` (30),`surname_ru`(30),`patronymic_ru`(30))
                ) COLLATE='utf8_general_ci';''',
        '''DROP TABLE IF EXISTS lessons;''',
        '''CREATE TABLE lessons(
@@ -77,8 +79,10 @@ sql = ['''DROP TABLE IF EXISTS `users`;''',
        '''DROP TABLE IF EXISTS `trackings`;''',
        '''CREATE TABLE `trackings`(
                `user_id` INT UNSIGNED NOT NULL,
+               `name` TINYTEXT,
                `type` SET('room', 'teacher', 'group') NOT NULL,
-               `tracked_id` SMALLINT UNSIGNED NOT NULL,
+               `tracked_id` INT UNSIGNED NOT NULL,
+               `black_list` JSON,
                `is_main` BOOL NOT NULL 
                ) COLLATE='utf8_general_ci';'''
        ]
@@ -86,9 +90,9 @@ sql = ['''DROP TABLE IF EXISTS `users`;''',
 
 def reset():
     conn = pymysql.connect(host=MYSQL_IP,
-                       database=MYSQL_BD_NAME,
-                       user=MYSQL_USER,
-                       password=MYSQL_PASSWORD)
+                           database=MYSQL_BD_NAME,
+                           user=MYSQL_USER,
+                           password=MYSQL_PASSWORD)
     cursor = conn.cursor()
     if input('Next action will erase all data in tables y/n?') == 'y':
         for query in sql:
@@ -96,3 +100,7 @@ def reset():
             cursor.execute(query)
     conn.commit()
     cursor.close()
+
+
+if __name__ == '__main__':
+    reset()
