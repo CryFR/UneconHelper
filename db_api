@@ -13,10 +13,10 @@ def connect_and_run(func):
         conn.commit()
         cursor.close()
         return result
+
     return wrap
 
 
-@connect_and_run
 def change_state(user_id, new_state, cursor):
     sql = '''INSERT INTO `users` (`user_id`, `state`) 
              VALUES (%s, %s)
@@ -25,7 +25,6 @@ def change_state(user_id, new_state, cursor):
     cursor.execute(sql, data)
 
 
-@connect_and_run
 def get_state(user_id, cursor):
     sql = '''SELECT `state` 
              FROM `users` 
@@ -34,7 +33,6 @@ def get_state(user_id, cursor):
     return cursor.fetchall()[0][0]
 
 
-@connect_and_run
 def get_previous_state(user_id, cursor):
     sql = '''SELECT `previous_state` 
              FROM `users` 
@@ -43,7 +41,6 @@ def get_previous_state(user_id, cursor):
     return cursor.fetchall()[0][0]
 
 
-@connect_and_run
 def set_tracking(user_id, tracking_type, tracked_id, is_main, name, cursor):
     sql = '''INSERT INTO `trackings` (user_id, type, tracked_id, is_main, name)
              VALUES (%s, %s, %s, %s, %s)'''
@@ -51,17 +48,24 @@ def set_tracking(user_id, tracking_type, tracked_id, is_main, name, cursor):
     cursor.execute(sql, data)
 
 
-@connect_and_run
-def get_trackings(user_id, cursor):
-    sql = '''SELECT * 
+def get_tracking_names(user_id, cursor):
+    sql = '''SELECT `name` 
              FROM `trackings`
              WHERE  `user_id`= %s'''
     cursor.execute(sql, user_id)
-    return [tracking for tracking in cursor.fetchall()]
+    return [tracking[0] for tracking in cursor.fetchall()]
 
 
-@connect_and_run
-def reset_tracking(user_id, name, cursor):
+def get_main_tracking(user_id, cursor):
+    sql = '''SELECT *
+             FROM `trackings`
+             WHERE  `user_id`= %s
+             AND `is_main` = 1'''
+    cursor.execute(sql, user_id)
+    return cursor.fetchall()[0]
+
+
+def remove_tracking(user_id, name, cursor):
     sql = '''DELETE FROM `trackings`
              WHERE `user_id` = %s
              AND `name` = %s'''
@@ -69,25 +73,22 @@ def reset_tracking(user_id, name, cursor):
     cursor.execute(sql, data)
 
 
-@connect_and_run
-def set_every_lesson_notification(user_id, seconds, cursor):
+def set_every_lesson_notification(user_id, time, cursor):
     sql = '''UPDATE `users`
              SET `every_lesson_notification` = %s
              WHERE `user_id` = %s'''
-    data = [seconds, user_id]
+    data = [time, user_id]
     cursor.execute(sql, data)
 
 
-@connect_and_run
-def set_first_lesson_notification(user_id, seconds, cursor):
+def set_first_lesson_notification(user_id, time, cursor):
     sql = '''UPDATE `users`
              SET `first_lesson_notification` = %s
              WHERE `user_id` = %s'''
-    data = [seconds, user_id]
+    data = [time, user_id]
     cursor.execute(sql, data)
 
 
-@connect_and_run
 def set_day_notification(user_id, time, cursor):
     sql = '''UPDATE `users`
              SET `day_notification` = %s
@@ -96,7 +97,6 @@ def set_day_notification(user_id, time, cursor):
     cursor.execute(sql, data)
 
 
-@connect_and_run
 def set_buffer(user_id, buffer, cursor):
     sql = '''UPDATE `users` 
              SET `buffer`=%s
@@ -105,7 +105,6 @@ def set_buffer(user_id, buffer, cursor):
     cursor.execute(sql, data)
 
 
-@connect_and_run
 def get_buffer(user_id, cursor):
     sql = '''SELECT `buffer` 
                  FROM `users` 
@@ -114,33 +113,30 @@ def get_buffer(user_id, cursor):
     return cursor.fetchall()[0][0]
 
 
-@connect_and_run
 def get_faculties(cursor):
-    sql = '''SELECT `faculty_name_ru` 
+    sql = '''SELECT `faculty_name` 
              FROM `faculties`
-             GROUP BY  `faculty_name_ru`'''
+             GROUP BY  `faculty_name`'''
     cursor.execute(sql)
     return [faculty[0] for faculty in cursor.fetchall()]
 
 
-@connect_and_run
 def get_specialities(faculty, cursor):
     sql = '''SELECT `group_speciality_name` 
              FROM `groups` 
              JOIN `faculties` ON `groups`.`faculty_id`=`faculties`.`faculty_id`
-             WHERE `faculties`.`faculty_name_ru` LIKE %s
+             WHERE `faculties`.`faculty_name` LIKE %s
              GROUP BY `group_speciality_name` 
              ORDER BY `group_speciality_name`'''
     cursor.execute(sql, faculty)
     return [speciality[0] for speciality in cursor.fetchall()]
 
 
-@connect_and_run
 def get_groups(faculty, speciality, cursor):
     sql = '''SELECT `course`, `group_number` 
              FROM `groups` g
              JOIN faculties f on g.faculty_id = f.faculty_id
-             WHERE f.`faculty_name_ru` = %s
+             WHERE f.`faculty_name` = %s
              AND g.`group_speciality_name` = %s
              ORDER BY `course`, `group_number`'''
     data = [faculty, speciality]
@@ -150,7 +146,6 @@ def get_groups(faculty, speciality, cursor):
             for group in cursor.fetchall()]
 
 
-@connect_and_run
 def get_all_groups(cursor):
     sql = '''SELECT `group_number`
              FROM `groups`'''
@@ -158,35 +153,32 @@ def get_all_groups(cursor):
     return [group[0] for group in cursor.fetchall()]
 
 
-@connect_and_run
 def get_teachers(name, cursor):
-    sql = '''SELECT `surname_ru`, `first_name_ru`, `patronymic_ru`,
-             MATCH(`surname_ru`, `first_name_ru`, `patronymic_ru`) 
+    sql = '''SELECT `surname`, `first_name`, `patronymic`,
+             MATCH(`surname`, `first_name`, `patronymic`) 
              AGAINST (%s IN BOOLEAN MODE) AS RES
              FROM `teachers`
-             WHERE MATCH(`surname_ru`, `first_name_ru`, `patronymic_ru`) 
+             WHERE MATCH(`surname`, `first_name`, `patronymic`) 
              AGAINST (%s IN BOOLEAN MODE)>0
-             ORDER BY RES DESC, `surname_ru`, `first_name_ru`, `patronymic_ru`'''
-    data = [''.join([f'+{part}* ' for part in name.split()]) + ''.join([f'>{part} ' for part in name.split()])]*2
+             ORDER BY RES DESC, `surname`, `first_name`, `patronymic`'''
+    data = [''.join([f'+{part}* ' for part in name.split()]) + ''.join([f'>{part} ' for part in name.split()])] * 2
     cursor.execute(sql, data)
     return [' '.join(names[:-1]) for names in cursor.fetchall()]
 
 
-@connect_and_run
 def get_buildings(cursor):
-    sql = '''SELECT `building_ru` 
+    sql = '''SELECT `building` 
              FROM `rooms`
-             GROUP BY  `building_ru`
-             ORDER BY  `building_ru`'''
+             GROUP BY  `building`
+             ORDER BY  `building`'''
     cursor.execute(sql)
     return [building[0] for building in cursor.fetchall() if building[0] != '']
 
 
-@connect_and_run
 def get_rooms(number, building, cursor):
     sql = '''SELECT `number` 
              FROM `rooms` 
-             WHERE `building_ru`=%s 
+             WHERE `building`=%s 
              AND `number` LIKE %s
              ORDER BY `number`'''
     data = [building, f'%{number}%']
@@ -194,19 +186,17 @@ def get_rooms(number, building, cursor):
     return [room[0] for room in cursor.fetchall()]
 
 
-@connect_and_run
 def get_teacher_id(name, cursor):
     sql = '''SELECT `teacher_id` 
                  FROM `teachers` 
-                 WHERE `surname_ru` = %s 
-                 AND `first_name_ru` = %s
-                 AND `patronymic_ru` = %s'''
+                 WHERE `surname` = %s 
+                 AND `first_name` = %s
+                 AND `patronymic` = %s'''
     data = name.split(maxsplit=2)
     cursor.execute(sql, data)
     return cursor.fetchall()[0][0]
 
 
-@connect_and_run
 def get_group_id(group, cursor):
     sql = '''SELECT `group_id` 
                  FROM `groups` 
@@ -215,23 +205,57 @@ def get_group_id(group, cursor):
     return cursor.fetchall()[0][0]
 
 
-@connect_and_run
 def get_room_id(number, building, cursor):
     sql = '''SELECT `room_id` 
              FROM `rooms` 
-             WHERE `building_ru`= %s 
+             WHERE `building`= %s 
              AND `number` LIKE %s'''
     data = [building, f'{number}']
     cursor.execute(sql, data)
     return cursor.fetchall()[0][0]
 
 
-@connect_and_run
-def get_schedule(user_id, cursor, name=None, main=False):
-    return 'Расписание'
+def get_schedule(date, tracked_type, tracked_id, cursor):
+    from datetime import datetime
+    sql = '''FROM `lessons`
+            JOIN `timings` ON `timings`.`number` = `lessons`.`lesson_number`
+            JOIN `subjects` ON `subjects`.`subject_id` = `lessons`.`subject_id`
+            JOIN `teachers` ON `teachers`.`teacher_id` = `lessons`.`teacher_id`
+            JOIN `groups` ON `groups`.`group_id` = `lessons`.`group_id`
+            JOIN `rooms` ON `rooms`.`room_id` = `lessons`.`room_id`'''
+    if tracked_type == 'group':
+        prefix = '''SELECT `time`, `subject_name`, `type`, concat_ws(' ', `surname`, `first_name`, `patronymic`), `building`, `rooms`.`number`'''
+        postfix = '''WHERE  `groups`.`group_id`= %s
+                     AND dates LIKE %s
+                     ORDER BY `timings`.`number`'''
+    elif tracked_type == 'room':
+        prefix = '''SELECT `time`, `subject_name`, `type`, concat_ws(' ', `surname`, `first_name`, `patronymic`), `groups`.`group_number`'''
+        postfix = '''WHERE  `rooms`.`room_id`= %s
+                 AND dates LIKE %s
+                 ORDER BY `timings`.`number`'''
+    elif tracked_type == 'teacher':
+        prefix = '''SELECT `time`, `subject_name`, `type`, `groups`.`group_number`, `building`, `rooms`.`number`'''
+        postfix = '''WHERE  `teachers`.`teacher_id`= %s
+                 AND dates LIKE %s
+                 ORDER BY `timings`.`number`'''
+    sql = f'{prefix}\n{sql}\n{postfix}'
+    data = [tracked_id, f'%{date}%']
+    cursor.execute(sql, data)
+    schedule = cursor.fetchall()
+    if schedule:
+        date = datetime.strptime(date, '%d.%m.%y')
+        answer = f"{date.strftime('%A, %d.%m')}\n\n".capitalize()
+        for lesson in schedule:
+            answer += '\n'.join(lesson)
+            answer += '\n\n'
+        return answer
+    else:
+        date = datetime.strptime(date, '%d.%m.%y')
+        answer = f"{date.strftime('%A, %d.%m')}\n\n".capitalize()
+        answer += "Пар нет, можно передохнуть"
+        return answer
 
 
-@connect_and_run
 def reset_user(user_id, cursor):
     sql = ['''DELETE FROM `trackings`
               WHERE `user_id` = %s''',
@@ -239,11 +263,3 @@ def reset_user(user_id, cursor):
               WHERE `user_id` = %s''']
     for query in sql:
         cursor.execute(query, user_id)
-
-
-def test(user_id, cursor):
-    sql = '''SELECT `state` 
-                 FROM `users` 
-                 WHERE `user_id`=%s'''
-    cursor.execute(sql, user_id)
-    return cursor.fetchall()[0][0]
