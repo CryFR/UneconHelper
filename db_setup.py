@@ -4,11 +4,10 @@ from constants import MYSQL_IP, MYSQL_USER, MYSQL_PASSWORD, MYSQL_BD_NAME
 sql = ['''DROP TABLE IF EXISTS `users`;''',
        '''CREATE TABLE `users`(
                `user_id` INT UNSIGNED NOT NULL PRIMARY KEY,
-               `is_en` BOOL,
-               `first_lesson_notification` INT,
-               `every_lesson_notification` INT,
-               `day_notification` TIME,
-               `last_notification` TIMESTAMP NULL ,
+               `lang` CHAR(2) DEFAULT 'ru',
+               `first_lesson_notification` TIME NULL,
+               `every_lesson_notification` TIME NULL,
+               `day_notification` TIME NULL,
                `subscription` BOOL,
                `showing_settings` SET(''),
                `buffer` TINYTEXT,
@@ -28,8 +27,7 @@ sql = ['''DROP TABLE IF EXISTS `users`;''',
        '''CREATE TABLE `faculties` (
                `faculty_id` SMALLINT UNSIGNED PRIMARY KEY,
                `courses` SET('1', '2', '3', '4', '5', '6'),
-               `faculty_name_ru` TINYTEXT,
-               `faculty_name_en` TINYTEXT
+               `faculty_name` TINYTEXT
                )COLLATE='utf8_general_ci';''',
        '''DROP TABLE IF EXISTS `timings`;''',
        '''CREATE TABLE `timings`(
@@ -39,13 +37,10 @@ sql = ['''DROP TABLE IF EXISTS `users`;''',
        '''DROP TABLE IF EXISTS `teachers`;''',
        '''CREATE TABLE `teachers`(
                `teacher_id` INT UNSIGNED NOT NULL PRIMARY KEY,
-               `surname_ru` TINYTEXT,
-               `first_name_ru` TINYTEXT,
-               `patronymic_ru` TINYTEXT,
-               `surname_en` TINYTEXT,
-               `first_name_en` TINYTEXT,
-               `patronymic_en` TINYTEXT,
-               FULLTEXT KEY `full_name`(`first_name_ru` (30),`surname_ru`(30),`patronymic_ru`(30))
+               `surname` TINYTEXT,
+               `first_name` TINYTEXT,
+               `patronymic` TINYTEXT,
+               FULLTEXT KEY `full_name`(`first_name` (30),`surname`(30),`patronymic`(30))
                ) COLLATE='utf8_general_ci';''',
        '''DROP TABLE IF EXISTS lessons;''',
        '''CREATE TABLE lessons(
@@ -55,26 +50,22 @@ sql = ['''DROP TABLE IF EXISTS `users`;''',
                `room_id` SMALLINT UNSIGNED,
                `dates` JSON,
                `lesson_number` TINYINT(3),
-               `type_ru` TINYTEXT,
-               `type_en` TINYTEXT,
+               `type` TINYTEXT,
                `group_id` SMALLINT UNSIGNED
                ) COLLATE='utf8_general_ci';''',
        '''DROP TABLE IF EXISTS `rooms`;''',
        '''CREATE TABLE `rooms`(
                `room_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                `number` TINYTEXT,
-               `building_ru` TINYTEXT,
-               `building_en` TINYTEXT,
-               UNIQUE INDEX full_number (number(10), building_ru(30))
+               `building` TINYTEXT,
+               UNIQUE INDEX full_number (number(10), building(30))
                ) COLLATE='utf8_general_ci';''',
        '''DROP TABLE IF EXISTS `subjects`;''',
        '''CREATE TABLE `subjects`(
                `subject_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-               `subject_name_ru`	TINYTEXT,
-               `subject_name_en` TINYTEXT,
-               `shortcut_ru` TINYTEXT,
-               `shortcut_en` TINYTEXT,
-               UNIQUE INDEX (subject_name_ru(80))
+               `subject_name` TINYTEXT,
+               `shortcut` TINYTEXT,
+               UNIQUE INDEX (subject_name(80))
                ) COLLATE='utf8_general_ci';''',
        '''DROP TABLE IF EXISTS `trackings`;''',
        '''CREATE TABLE `trackings`(
