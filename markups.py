@@ -1,6 +1,7 @@
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, \
     ReplyKeyboardRemove
 from db_api import *
+from datetime import datetime, timedelta
 from constants import every_lesson_notification_options
 
 
@@ -95,46 +96,47 @@ def main():
     return mkp
 
 
-def get_day_notification_inline(hours=None, minutes=None):
+def inline_timer(hours=None, minutes=None):
     if minutes is None:
         minutes = [0, 0]
     if hours is None:
         hours = [0, 0]
     mkp = InlineKeyboardMarkup()
     data = f' {hours[0]} {hours[1]} {minutes[0]} {minutes[1]}'
-    timer_mkp = inline_timer(hours, minutes, data)
+    timer_mkp = ((InlineKeyboardButton('▲', callback_data='h0+' + data),
+                  InlineKeyboardButton('▲', callback_data='h1+' + data),
+                  InlineKeyboardButton('-', callback_data='None' + data),
+                  InlineKeyboardButton('▲', callback_data='m0+' + data),
+                  InlineKeyboardButton('▲', callback_data='m1+' + data)),
+                 (InlineKeyboardButton(hours[0], callback_data='None' + data),
+                  InlineKeyboardButton(hours[1], callback_data='None' + data),
+                  InlineKeyboardButton(':', callback_data='None' + data),
+                  InlineKeyboardButton(minutes[0], callback_data='None' + data),
+                  InlineKeyboardButton(minutes[1], callback_data='None' + data)),
+                 (InlineKeyboardButton('▼', callback_data='h0-' + data),
+                  InlineKeyboardButton('▼', callback_data='h1-' + data),
+                  InlineKeyboardButton('-', callback_data='None' + data),
+                  InlineKeyboardButton('▼', callback_data='m0-' + data),
+                  InlineKeyboardButton('▼', callback_data='m1-' + data)),
+                 (InlineKeyboardButton('Не уведомлять', callback_data='Cancel' + data),
+                  InlineKeyboardButton('Подтвердить', callback_data='Submit' + data)))
     for row in timer_mkp:
         mkp.row(*row)
-    mkp.row(InlineKeyboardButton('Не уведомлять', callback_data='Cancel' + data),
-            InlineKeyboardButton('Подтвердить', callback_data='Submit' + data))
     return mkp
 
 
-def inline_timer(hours, minutes, data):
-    mkp = ((InlineKeyboardButton('▲', callback_data='h0+' + data),
-            InlineKeyboardButton('▲', callback_data='h1+' + data),
-            InlineKeyboardButton('-', callback_data='None' + data),
-            InlineKeyboardButton('▲', callback_data='m0+' + data),
-            InlineKeyboardButton('▲', callback_data='m1+' + data)),
-           (InlineKeyboardButton(hours[0], callback_data='None' + data),
-            InlineKeyboardButton(hours[1], callback_data='None' + data),
-            InlineKeyboardButton(':', callback_data='None' + data),
-            InlineKeyboardButton(minutes[0], callback_data='None' + data),
-            InlineKeyboardButton(minutes[1], callback_data='None' + data)),
-           (InlineKeyboardButton('▼', callback_data='h0-' + data),
-            InlineKeyboardButton('▼', callback_data='h1-' + data),
-            InlineKeyboardButton('-', callback_data='None' + data),
-            InlineKeyboardButton('▼', callback_data='m0-' + data),
-            InlineKeyboardButton('▼', callback_data='m1-' + data)))
+def inline_schedule_controls(date=datetime.now().strftime('%d.%m.%y')):
+    mkp = InlineKeyboardMarkup()
+    print(date)
+    date = datetime.strptime(date, '%d.%m.%y')
+    day = timedelta(days=1)
+    week = timedelta(weeks=1)
+    mkp.row(InlineKeyboardButton((date-day).strftime('%d.%m %a'), callback_data=str((date-day).strftime('%d.%m.%y'))),
+            InlineKeyboardButton((date+day).strftime('%d.%m %a'), callback_data=str((date+day).strftime('%d.%m.%y'))))
+    mkp.row(InlineKeyboardButton((date-week).strftime('%d.%m %a'), callback_data=str((date-week).strftime('%d.%m.%y'))),
+            InlineKeyboardButton((date+week).strftime('%d.%m %a'), callback_data=str((date+week).strftime('%d.%m.%y'))))
     return mkp
 
 
-if __name__ == '__main__':
-    conn = pymysql.connect(host=MYSQL_IP,
-                           database=MYSQL_BD_NAME,
-                           user=MYSQL_USER,
-                           password=MYSQL_PASSWORD)
-    cursor = conn.cursor()
-    print(groups(get_buffer(294821600, cursor), 'Информационная безопасность'))
-    conn.commit()
-    cursor.close()
+if __name__ =='__main__':
+    print(str(datetime.now().strftime('%d%m%y')))
