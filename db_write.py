@@ -43,17 +43,17 @@ def fill_groups():
 
 def fill_timings():
     timings = {
-        '1': ['09:00 - 10:35'],
-        '2': ['10:50 - 12:25'],
-        '3': ['12:40 - 14:15'],
-        '4': ['14:30 - 16:00'],
-        '5': ['16:10 - 17:40'],
-        '6': ['18:30 - 20:00'],
-        '7': ['20:10 - 21:40']
+        '1': ['09:00 - 10:35', '09:00', '10:35'],
+        '2': ['10:50 - 12:25', '10:50', '12:25'],
+        '3': ['12:40 - 14:15', '12:40', '14:15'],
+        '4': ['14:30 - 16:00', '14:30', '16:00'],
+        '5': ['16:10 - 17:40', '16:10', '17:40'],
+        '6': ['18:30 - 20:00', '18:30', '20:00'],
+        '7': ['20:10 - 21:40', '20:10', '21:40']
     }
-    sql = "INSERT INTO `timings` (`number`, `time`) VALUES (%s, %s)"
+    sql = "INSERT INTO `timings` (`number`, `time`, `start_time`, `end_time`) VALUES (%s, %s, %s, %s)"
     for timing in timings:
-        data = [timing, timings[timing]]
+        data = [timing, *timings[timing]]
         try:
             cursor.execute(sql, data)
         except Exception as e:

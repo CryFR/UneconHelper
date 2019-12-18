@@ -6,21 +6,22 @@ from constants import every_lesson_notification_options
 
 
 def remove():
-    mkp = ReplyKeyboardRemove()
-    return mkp
+    return ReplyKeyboardRemove()
 
 
-def no_need():
+def yes_no():
     mkp = ReplyKeyboardMarkup(True, False)
-    mkp.row('Не уведомлять')
+    mkp.row('Да', 'Нет')
     return mkp
 
 
-def start():
+def add_schedule(returnable=True):
     mkp = ReplyKeyboardMarkup(True, False)
     mkp.row('️️Расписание группы')
     mkp.row('Расписание преподавателя')
     mkp.row('Расписание аудитории')
+    if returnable:
+        mkp.row('Назад')
     return mkp
 
 
@@ -74,7 +75,7 @@ def buildings(cursor):
 
 @connect_and_run
 def room_numbers(number, building, cursor):
-    mkp = ReplyKeyboardMarkup(True, False, row_width=5)
+    mkp = ReplyKeyboardMarkup(True, False, row_width=4)
     buttons = []
     for room in get_rooms(number, building, cursor):
         buttons.append(room)
@@ -89,10 +90,41 @@ def every_lesson_notification():
     return mkp
 
 
-def main():
-    mkp = ReplyKeyboardMarkup(True, False, row_width=2)
-    mkp.row('Menu')
-    # TODO: menu markup
+def notification_choose(returnable=True):
+    mkp = ReplyKeyboardMarkup(True, False)
+    mkp.row('Установить время уведомлений перед каждой парой')
+    mkp.row('Установить время уведомления перед первой парой')
+    mkp.row('Установить время уведомления с расписанием предстоящих пар')
+    if returnable:
+        mkp.row('Назад')
+    return mkp
+
+
+def set_main_schedule(user_id, cursor):
+    mkp = ReplyKeyboardMarkup(True, False)
+    main = get_main_tracking(user_id, cursor)[5]
+    for name in get_tracking_names(user_id, cursor):
+        if name != main:
+            mkp.row(name)
+    mkp.row('Назад')
+    return mkp
+
+
+@connect_and_run
+def main_menu(user_id, cursor):
+    mkp = ReplyKeyboardMarkup(True, False)
+    for name in get_tracking_names(user_id, cursor):
+        mkp.row(name)
+    mkp.row('Настройки')
+    return mkp
+
+
+def settings():
+    mkp = ReplyKeyboardMarkup(True, False)
+    mkp.row('Добавить расписание')
+    mkp.row('Изменить главное расписание')
+    mkp.row('Установить/изменить врямя уведомлений')
+    mkp.row('Назад')
     return mkp
 
 
@@ -127,16 +159,17 @@ def inline_timer(hours=None, minutes=None):
 
 def inline_schedule_controls(date=datetime.now().strftime('%d.%m.%y')):
     mkp = InlineKeyboardMarkup()
-    print(date)
     date = datetime.strptime(date, '%d.%m.%y')
     day = timedelta(days=1)
     week = timedelta(weeks=1)
-    mkp.row(InlineKeyboardButton((date-day).strftime('%d.%m %a'), callback_data=str((date-day).strftime('%d.%m.%y'))),
-            InlineKeyboardButton((date+day).strftime('%d.%m %a'), callback_data=str((date+day).strftime('%d.%m.%y'))))
-    mkp.row(InlineKeyboardButton((date-week).strftime('%d.%m %a'), callback_data=str((date-week).strftime('%d.%m.%y'))),
-            InlineKeyboardButton((date+week).strftime('%d.%m %a'), callback_data=str((date+week).strftime('%d.%m.%y'))))
+    mkp.row(
+        InlineKeyboardButton((date - day).strftime('%d.%m %a'), callback_data=str((date - day).strftime('%d.%m.%y'))),
+        InlineKeyboardButton((date + day).strftime('%d.%m %a'), callback_data=str((date + day).strftime('%d.%m.%y'))))
+    mkp.row(
+        InlineKeyboardButton((date - week).strftime('%d.%m %a'), callback_data=str((date - week).strftime('%d.%m.%y'))),
+        InlineKeyboardButton((date + week).strftime('%d.%m %a'), callback_data=str((date + week).strftime('%d.%m.%y'))))
     return mkp
 
 
-if __name__ =='__main__':
+if __name__ == '__main__':
     print(str(datetime.now().strftime('%d%m%y')))

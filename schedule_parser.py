@@ -16,20 +16,20 @@ def get_soup(url):
 
 def get_faculties():
     soup = get_soup(main_url)
-    faculties = eval(soup.body.main.script.get_text().split('\n')[1][17:-2])
+    faculties = eval(soup.body.main_menu.script.get_text().split('\n')[1][17:-2])
     return faculties
 
 
 def get_courses(faculty_num):
     soup = get_soup(main_url)
-    courses = eval(soup.body.main.script.get_text().split('\n')[2][23:-2])[str(faculty_num)]
+    courses = eval(soup.body.main_menu.script.get_text().split('\n')[2][23:-2])[str(faculty_num)]
     return courses
 
 
 def get_groups(faculty_num, course):
     soup = get_soup(main_url)
     groups = {}
-    group_list = eval(soup.body.main.script.get_text().split('\n')[3][25:-2])[str(faculty_num)][str(course)]
+    group_list = eval(soup.body.main_menu.script.get_text().split('\n')[3][25:-2])[str(faculty_num)][str(course)]
     for group_dict in group_list:
         groups.update({group_dict.get('grp_kod'): [group_dict.get('grp_nomer'), group_dict.get('grp_spec_kod'), group_dict.get('grp_spec_name')]})
     return groups

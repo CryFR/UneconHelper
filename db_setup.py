@@ -32,7 +32,9 @@ sql = ['''DROP TABLE IF EXISTS `users`;''',
        '''DROP TABLE IF EXISTS `timings`;''',
        '''CREATE TABLE `timings`(
                `number` TINYINT(3) NOT NULL PRIMARY KEY,
-               `time` TINYTEXT
+               `time` TINYTEXT,
+               `start_time` TIME,
+               `end_time` TIME
        ) COLLATE='utf8_general_ci';''',
        '''DROP TABLE IF EXISTS `teachers`;''',
        '''CREATE TABLE `teachers`(
